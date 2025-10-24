@@ -6,14 +6,23 @@ multi-step operations.
 """
 
 from typing import Annotated
-
 from langchain_core.messages import ToolMessage
 from langchain_core.tools import InjectedToolCallId, tool
 from langgraph.prebuilt import InjectedState
 from langgraph.types import Command
-
+from pydantic import BaseModel
 from prompts import WRITE_TODOS_DESCRIPTION
 from state import DeepAgentState, Todo
+
+# class ReadTodosArgsSchema(BaseModel):
+#     """
+#     Schema for the arguments required to read TODOs.
+#     Args:
+#         state (DeepAgentState): The current state of the deep research agent, injected as a dependency.
+#         tool_call_id (str): A unique identifier for the tool call, injected as a dependency.
+#     """
+#     state: Annotated[DeepAgentState, InjectedState]
+#     tool_call_id: Annotated[str, InjectedToolCallId]
 
 
 @tool(description=WRITE_TODOS_DESCRIPTION,parse_docstring=True)
@@ -38,22 +47,22 @@ def write_todos(
         }
     )
 
-
-@tool(parse_docstring=True)
+@tool(parse_docstring=True,
+    #   args_schema=ReadTodosArgsSchema
+)
 def read_todos(
     state: Annotated[DeepAgentState, InjectedState],
     tool_call_id: Annotated[str, InjectedToolCallId],
 ) -> str:
     """Read the current TODO list from the agent state.
-
     This tool allows the agent to retrieve and review the current TODO list
     to stay focused on remaining tasks and track progress through complex workflows.
 
-    Args:
+    Args::
         state: Injected agent state containing the current TODO list
         tool_call_id: Injected tool call identifier for message tracking
 
-    Returns:
+    Returns::
         Formatted string representation of the current TODO list
     """
     todos = state.get("todos", [])
